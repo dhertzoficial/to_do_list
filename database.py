@@ -1,162 +1,171 @@
 import sqlite3
 
-def conectar():
-    conexao = sqlite3.connect("to_do_database_4.db")
-    cursor = conexao.cursor()
+def to_connect():
+    connection = sqlite3.connect("to_do_database_4.db")
+    cursor = connection.cursor()
     cursor.execute('''
-    CREATE TABLE IF NOT EXISTS tarefas (
+    CREATE TABLE IF NOT EXISTS tasks (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        nome_tarefa TEXT NOT NULL,
+        task_name TEXT NOT NULL,
         status INTEGER NOT NULL,
         prior INTEGER NOT NULL,
         time FLOAT NOT NULL
     )
     ''')
-    conexao.commit()
-    return conexao, cursor
+    connection.commit()
+    return connection, cursor
 
-def inserir_tarefa():
-    conexao, cursor = conectar()
-    nome_tarefa = input("\nDigite o nome da tarefa: ")
+def add_task():
+    connection, cursor = to_connect()
+    task_name = input("\nEnter the task name: ")
     while True:
-        status = int(input("Digite o status da tarefa: pending(0) ou done(1) "))
+        status = int(input("Enter the status: pending(0) ou done(1) "))
         if status == 0 or status == 1:
             break
         else:
-            print("Aceitos somente 0 ou 1")
+            print("Only 0 and 1 are accepted")
     
     while True:
-        prior = int(input("Digite a priority da tarefa: Alta(1), Media(2), Baixa(3)  : "))
+        prior = int(input("Enter the task priority: High(1), Medium(2), Low(3): "))
         if prior == 1 or prior == 2 or prior == 3:
             break
         else:
-            print("Aceitos somente 1, 2 ou 3")
+            print("Only 1, 2 or 3 accepted")
     
-    time = float(input("Digite o time (exemplo 8.2 para 8:20): "))
+    time = float(input("Enter one time (ex.: 8.2 to 8:20): "))
     cursor.execute('''
-    INSERT INTO tarefas (nome_tarefa, status, prior, time)
+    INSERT INTO tasks (task_name, status, prior, time)
     VALUES (?, ?, ?, ?)
-    ''', (nome_tarefa, status, prior, time))
-    conexao.commit()
-    conexao.close()
-    print("\nTarefa inserida com sucesso")
+    ''', (task_name, status, prior, time))
+    connection.commit()
+    connection.close()
+    print("\nTask successfully entered")
 
-def atualizar_tarefa():
-    conexao, cursor = conectar()
-    id_tarefa = int(input("Digite o ID da tarefa a ser atualizada: "))
-    nome_tarefa = input("Digite o novo nome da tarefa: ")
-    status = int(input("Digite o status da tarefa: Pending(0) ou Done(1) "))
-    prior = int(input("Digite a nova prior da tarefa: "))
-    time = float(input("Digite o novo time: "))
+def task_uptade():
+    connection, cursor = to_connect()
+    task_id = int(input("Please, enter the task ID to be updated: "))
+    task_name = input("Enter the task name: ")
+    status = int(input("Enter the status: Pending(0) ou Done(1) "))
+    prior = int(input("Enter the task priority: High(1), Medium(2), Low(3): "))
+    time = float(input("Enter one time (ex.: 8.2 to 8:20): "))
     cursor.execute('''
-    UPDATE tarefas
-    SET nome_tarefa = ?, status = ?, prior = ?, time = ?
+    UPDATE tasks
+    SET task_name = ?, status = ?, prior = ?, time = ?
     WHERE id = ?
-    ''', (nome_tarefa, status, prior, time, id_tarefa))
-    conexao.commit()
-    conexao.close()
-    print("\nTarefa atualizada com sucesso")
+    ''', (task_name, status, prior, time, task_id))
+    connection.commit()
+    connection.close()
+    print("\nTask successfully updated")
 
-def deletar_tarefa():
-    conexao, cursor = conectar()
-    id_tarefa = int(input("\nDigite o ID da tarefa a ser deletada: "))
+def task_delete():
+    connection, cursor = to_connect()
+    task_id = int(input("\nPlease, enter the task ID do be deleted: "))
     
-    #PEGAR O NOME DA TAREFA
-    cursor.execute('SELECT nome_tarefa FROM tarefas WHERE id = ?', (id_tarefa,))
-    tarefa = cursor.fetchone()
+    #Take the task name
+    cursor.execute('SELECT task_name FROM tasks WHERE id = ?', (task_id,))
+    task = cursor.fetchone()
     
-    if tarefa:
-        nome_tarefa = tarefa[0]
+    if task:
+        task_name = task[0]
 
-        # CODIGO COR ANSI PARA AMARELO
+        # ANSI CODE FOR COLOR
         YELLOW = '\033[93m'
         RESET = '\033[0m'
 
-        confirmacao = input(f"{YELLOW}Voce tem certeza que deseja excluir a tarefa '{nome_tarefa}'?  (s/n) {RESET}").lower()
-        if confirmacao == 's':
-            cursor.execute('DELETE FROM tarefas WHERE id = ?', (id_tarefa,))
-            conexao.commit()
-            print("\nTarefa deletada com sucesso")
+        confirmation = input(f"{YELLOW}Are you sure you want to delete the task '{task_name}'?  (y/n) {RESET}").lower()
+        if confirmation == 'y':
+            cursor.execute('DELETE FROM tasks WHERE id = ?', (task_id,))
+            connection.commit()
+            print("\ntask successfully deleted")
         else:
-            print("\nExclusao cancelada")
+            print("\nExclusion cancelled")
     else:
-        print("\nTarefa nao encontrada")
+        print("\ntask not found")
     
-    conexao.close()
+    connection.close()
 
-def exibir_tarefas():
-    conexao, cursor = conectar()
-    cursor.execute('SELECT * FROM tarefas ORDER BY time')
-    tarefas = cursor.fetchall()
+def show_tasks():
+    
+    # OPENING CONNECTION
+    connection, cursor = to_connect()
+    
+    # SELECTING ALL TASKS AND ORDERING THEM BY TIME
+    cursor.execute('SELECT * FROM tasks ORDER BY time')
+    
+    # OPINING CURSOR
+    tasks = cursor.fetchall()
     print("")
     
-    #CABECALHO DA TABELA
-    print(f"{"ID":<4} | {"NOME DA TAREFA":<30} | {"STATUS":<8} | {"PRIORIDADE":<12} | {"TIME":<6}")
+    #TASK HEADER
+    print(f"{"ID":<4} | {"TASK NAME":<30} | {"STATUS":<8} | {"PRIORITY":<12} | {"TIME":<6}")
     print("-" * 70)
     
-    # CODIGO CORES ANSI
+    # ANSI COLOR CODES
     RED = '\033[91m'
     GREEN = '\033[92m'
-    YELLOW = '\033[93m'
     RESET = '\033[0m'
 
-    for tarefa in tarefas:
-        id_tarefa, nome_tarefa, status, priority, time = tarefa
+    for task in tasks:
+        task_id, task_name, status, priority, time = task
+        
+        # CONVERTING STATUS CODE IN STATUS STRING TO SHOW TO USER
         status_string = "Pending" if status == 0 else "Done"
         
-        # TRANSFORMANDO PRIORIDADES EM TEXTO
+        # CONVERTING PRIORITIES TO TEXT
         if priority == 1:
-            priority_string = "Alta"
+            priority_string = "High"
         elif priority == 2:
-            priority_string = "Media"
+            priority_string = "Medium"
         elif priority == 3:
-            priority_string = "Baixa"
+            priority_string = "Low"
         else:
-            priority_string = "Não definida"
+            priority_string = "Not defined"
 
+        # Highlighting task status
         color = RED if status == 0 else GREEN
-        print(f"{id_tarefa:<4} | {nome_tarefa:<30} | {color}{status_string:<8}{RESET} | {priority_string:<12} | {time:<6}" )
-    conexao.close()
+        
+        print(f"{task_id:<4} | {task_name:<30} | {color}{status_string:<8}{RESET} | {priority_string:<12} | {time:<6}" )
+    connection.close()
     
-def update_time_tarefa():
-    conexao, cursor = conectar()
-    id_tarefa = int(input("Digite o ID da tarefa a ser atualizada: "))
-    time = float(input("Digite o novo time: "))
+def update_task_time():
+    connection, cursor = to_connect()
+    task_id = int(input("Please, enter the task ID to be updated: "))
+    time = float(input("Plese, enter a new task time: "))
     cursor.execute('''
-    UPDATE tarefas
+    UPDATE tasks
     SET time = ?
     WHERE id = ?
-    ''', (time, id_tarefa))
-    conexao.commit()
-    conexao.close()
-    print("\nTarefa atualizada com sucesso")
+    ''', (time, task_id))
+    connection.commit()
+    connection.close()
+    print("\nTask successfully updated")
 
 def main():
-    conectar()
+    to_connect()
     while True:
         print("\nMenu:")
-        print("1 - Inserir tarefa")
-        print("2 - Atualizar tarefa")
-        print("3 - Deletar tarefa")
-        print("4 - Exibir tarefas")
-        print("5 - Alterar horario tarefa")
-        print("6 - Sair")
+        print("1 - Insert task")
+        print("2 - Update task")
+        print("3 - Delete task")
+        print("4 - Show tasks")
+        print("5 - Change task time")
+        print("6 - Leave")
 
-        escolha = input("Digite a opcao desejada: ")
-        if escolha == "1":
-            inserir_tarefa()
-        elif escolha == "2":
-            atualizar_tarefa()
-        elif escolha == "3":
-            deletar_tarefa()
-        elif escolha == "4":
-            exibir_tarefas()
-        elif escolha == "5":
-            update_time_tarefa()
-        elif escolha == "6":
+        choose = input("Please, enter the desired option: ")
+        if choose == "1":
+            add_task()
+        elif choose == "2":
+            task_uptade()
+        elif choose == "3":
+            task_delete()
+        elif choose == "4":
+            show_tasks()
+        elif choose == "5":
+            update_task_time()
+        elif choose == "6":
             break
         else:
-            print("Opcao invalida")
+            print("Invalid option")
 
 if __name__ == "__main__":
     main()
