@@ -32,7 +32,7 @@ def add_task():
         else:
             print("Only 1, 2 or 3 accepted")
     
-    time = float(input("Enter one time (ex.: 8.2 to 8:20): "))
+    time = float(input("Enter task time (ex.: 8.2 to 8:20): "))
     cursor.execute('''
     INSERT INTO tasks (task_name, status, prior, time)
     VALUES (?, ?, ?, ?)
@@ -47,7 +47,7 @@ def task_uptade():
     task_name = input("Enter the task name: ")
     status = int(input("Enter the status: Pending(0) ou Done(1) "))
     prior = int(input("Enter the task priority: High(1), Medium(2), Low(3): "))
-    time = float(input("Enter one time (ex.: 8.2 to 8:20): "))
+    time = float(input("Enter task time (ex.: 8.2 to 8:20): "))
     cursor.execute('''
     UPDATE tasks
     SET task_name = ?, status = ?, prior = ?, time = ?
